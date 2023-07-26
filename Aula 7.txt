@@ -1,0 +1,91 @@
+conn hr/hr
+
+select to_char(sysdate,'dd/mm/yyyy') DATA from dual;
+
+select to_char(sysdate,'dd-mon-yyyy') DATA from dual;
+
+select to_char(sysdate,'dd-month-yyyy') DATA from dual;
+
+select sysdate DATA from dual;
+
+create table formatacao_data(
+id number(2),
+data_acesso date default sysdate);
+
+create sequence id_seq;
+
+insert into formatacao_data values(id_seq.nextval,default);
+insert into formatacao_data values(id_seq.nextval,default);
+insert into formatacao_data values(id_seq.nextval,default);
+insert into formatacao_data values(id_seq.nextval,to_date('02-jan-22','dd-mon-yy'));
+insert into formatacao_data values(id_seq.nextval,to_date('02-03-2022','dd-mm-yyyy'));
+insert into formatacao_data values(id_seq.nextval,to_date('02-abril-2022','dd-month-yyyy'));
+
+commit;
+
+select data_acesso DATA from formatacao_data;
+
+create table professor(
+cod_prof number(4),
+nome_prof varchar2(30));
+
+insert into professor values (1,'jose');
+insert into professor values (2,'JOSE');
+insert into professor values (3,'Jose');
+insert into professor values (4,'JOse');
+select * from professor;
+
+select count(*) from professor where nome_prof='JOSE';
+
+update professor
+set nome_prof=upper(nome_prof);
+select * from professor;
+select count(*) from professor where nome_prof='JOSE';
+
+
+create table pessoa(
+cod_pessoa number(2),
+nome_pessoa varchar2(30),
+cpf varchar2(13),
+sexo char(1));
+
+insert into pessoa values (1,'JOSE','12345678912','M");
+insert into pessoa values (2,'JOAO','12345678913','m');
+
+select * from pessoa;
+
+delete from pessoa;
+
+alter table pessoa
+add constraint verificacao_de_sexo check (sexo='M' or sexo='F' or sexo='O');
+
+insert into pessoa values (2,'JOAO','12345678913','m'); -- erro
+
+alter table pessoa
+modify nome_pessoa not null;
+
+insert into pessoa values(3,null,'12345678913','F'); -- erro
+
+
+create table aluno(
+ra number(5),
+nome_aluno varchar2(50),
+idade number(3));
+
+insert into aluno values (12345,'JOSE',25);
+
+select * from aluno;
+
+alter table aluno
+drop column idade;
+
+alter table aluno
+add dt_nasc date;
+
+insert into aluno values (12346,'JOAO','25/04/01');
+
+select ra, nome_aluno, trunc((sysdate-dt_nasc)/365,0) idade from aluno;
+
+
+
+
