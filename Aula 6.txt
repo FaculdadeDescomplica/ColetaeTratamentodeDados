@@ -1,0 +1,184 @@
+       CREATE OR REPLACE DIRECTORY descomplica_dir AS 'c:\descomplica';
+       
+        GRANT READ, WRITE ON DIRECTORY descomplica_dir TO hr;       
+
+        CREATE TABLE sexo_externa
+        (
+            ID varchar2(3),
+            NOME varchar2(50),   
+            sexo varchar2(10)
+        )
+        ORGANIZATION EXTERNAL
+        (
+          TYPE ORACLE_LOADER
+          DEFAULT DIRECTORY FAM_DIR
+          ACCESS PARAMETERS
+              (
+                RECORDS DELIMITED BY NEWLINE
+                FIELDS TERMINATED BY ','
+              )
+        LOCATION ('sexo.csv')
+        );   
+
+SELECT * FROM sexo_externa;
+
+
+create table sexo_transformacao as (select * from sexo_externa);
+
+select * from sexo_transformacao;
+
+select distinct sexo from sexo_transformacao order by sexo;
+
+update sexo_transformacao
+set sexo='F'
+where sexo in(' Fem',' Feminino',' mulher','f','Fem','Feminino');
+
+update sexo_transformacao
+set sexo='M'
+where sexo in('H','h','homem','m','Masc','Masculino','masculino');
+
+
+Select * from sexo_transformacao;
+select distinct sexo from sexo_transformacao order by sexo;
+
+select sexo, count(sexo)
+from sexo_transformacao
+group by rollup( sexo);
+
+
+
+CONN system/oracle
+create user dup identified by dup account unlock;
+grant dba to dup;
+conn dup/dup
+
+create table cliente(
+cod_cli number(3) primary key,
+nome_cli varchar2(30),
+cpf varchar2(11) );
+
+create sequence cod_cli;
+
+insert into cliente values (cod_cli.nextval,'JOSE DA SILVA','12345678901');
+insert into cliente values (cod_cli.nextval,'MARIA DE JESUS','12345678912');
+insert into cliente values (cod_cli.nextval,'JOAO ANTONIO','12345678901');
+COMMIT;
+
+
+SELECT COUNT(*) FROM CLIENTE;
+SELECT COUNT(CPF),CPF FROM CLIENTE group by cpf;
+SELECT * FROM CLIENTE WHERE CPF='12345678901';
+
+DELETE FROM CLIENTE WHERE COD_CLI=3;
+
+SELECT COUNT(*) FROM CLIENTE;
+SELECT COUNT(CPF),CPF FROM CLIENTE group by cpf;
+
+CONN system/oracle
+drop user dup cascade;
+create user dup identified by dup account unlock;
+grant dba to dup;
+conn dup/dup
+
+create table cliente(
+cod_cli number(3) primary key,
+nome_cli varchar2(30),
+cpf varchar2(11) );
+
+create sequence cod_cli;
+
+insert into cliente values (cod_cli.nextval,'JOSE DA SILVA','12345678901');
+insert into cliente values (cod_cli.nextval,'MARIA DE JESUS','12345678912');
+insert into cliente values (cod_cli.nextval,'JOAO ANTONIO',null);
+insert into cliente values (cod_cli.nextval,'ELIZABETH ALMEIDA',null);
+
+COMMIT;
+
+SELECT COUNT(*),CPF FROM CLIENTE group by cpf;
+
+SELECT * FROM CLIENTE WHERE CPF IS NULL;
+
+
+DELETE FROM CLIENTE WHERE COD_CLI=3;
+
+UPDATE CLIENTE SET CPF='12345678913' WHERE COD_CLI=4;
+
+
+SELECT COUNT(*),CPF FROM CLIENTE group by cpf;
+
+SELECT * FROM CLIENTE WHERE CPF IS NULL;
+
+CONN system/oracle
+drop user dup cascade;
+create user dup identified by dup account unlock;
+grant dba to dup;
+conn dup/dup
+
+CREATE TABLE PACIENTE (
+cod_pac numeric(4) PRIMARY KEY,
+cod_pessoa numeric(4));
+-- populando a tabela paciente
+Insert into paciente values (1234,4);
+Insert into paciente values (1231,5);
+Insert into paciente values (1232,1);
+Commit;
+Select * from paciente;
+
+CREATE TABLE PESSOA (
+cod_pessoa numeric(4) PRIMARY KEY,
+endereco varchar(30),
+nome varchar(30),
+data_nasc date
+);
+-- populando a tabela pessoa
+insert into pessoa values (1,'r.x,100','jose DA SILVA','01/01/01');
+insert into pessoa values (2,'r.y,100','joao ANTONIO','01/02/01');
+insert into pessoa values (3,'r.z,100','maria DE JESUS','10/04/03');
+insert into pessoa values (4,'r.w,100','antonio CARLOS','01/05/02');
+insert into pessoa values (5,'r.x,200','joaquim CRUZ','11/10/04');
+SELECT * FROM PESSOA;
+
+CREATE TABLE MEDICO (
+crm numeric(5) PRIMARY KEY,
+cod_pessoa numeric(4)
+);
+
+-- populando a tabela medico
+Insert into medico values (12345,1);
+Insert into medico values (23451,2);
+Insert into medico values (23452,3);
+Commit;
+Select * from medico;
+
+
+CREATE TABLE MEDICO_R AS (SELECT M.CRM CRM, P.NOME NOME_MEDICO,P.ENDERECO "ENDERECO DO MEDICO", P.DATA_NASC "DT_NASCIMENTO"
+FROM PESSOA P JOIN MEDICO M
+ON (P.COD_PESSOA=M.COD_PESSOA));
+
+SELECT * FROM MEDICO_R;
+
+CREATE TABLE PACIENTE_R AS (SELECT PA.COD_PAC CODIGO_PACIENTE, P.NOME NOME_PACIENTE,P.ENDERECO "ENDERECO DO PACIENTE", P.DATA_NASC "DT_NASCIMENTO"
+FROM PESSOA P JOIN PACIENTE PA
+ON (P.COD_PESSOA=PA.COD_PESSOA));
+
+SELECT * FROM PACIENTE_R;
+
+
+SELECT M.CRM CRM, P.NOME NOME_MEDICO,P.ENDERECO "ENDERECO DO MEDICO", P.DATA_NASC "DT_NASCIMENTO"
+FROM PESSOA P JOIN MEDICO M
+ON (P.COD_PESSOA=M.COD_PESSOA);
+
+SELECT PA.COD_PAC CODIGO_PACIENTE, P.NOME NOME_PACIENTE,P.ENDERECO "ENDERECO DO PACIENTE", P.DATA_NASC "DT_NASCIMENTO"
+FROM PESSOA P JOIN PACIENTE PA
+ON (P.COD_PESSOA=PA.COD_PESSOA);
+
+select p.nome NOME_MEDICO, m.crm CRM_MEDICO, P.NOME NOME_PACIENTE, pa.cod_pac CODIGO_PACIENTE
+from pessoa p join medico m
+on (p.cod_pessoa=m.cod_pessoa)
+JOIN PACIENTE PA
+ON(P.COD_PESSOA=PA.COD_PESSOA);
+
+
+SELECT * FROM PESSOA;
+SELECT * FROM PACIENTE;
+SELECT * FROM MEDICO;
